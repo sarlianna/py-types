@@ -34,6 +34,9 @@ def custom_validator(a: int) -> ValidationResult:
 def validated(a: custom_validator) -> custom_validator:
     return a + 5
 
+@typecheck
+def no_return_type() -> None:
+    pass
 
 #----------------------
 # Tests
@@ -50,6 +53,16 @@ class TypecheckTestCase(unittest.TestCase):
     def test_check_result_fails(self):
         self.assertRaises(TypeError, type_checked_bad_return, 2)
 
+    def test_check_no_return(self):
+        @typecheck
+        def no_return_type() -> None:
+            print("not returning anything!")
+        @typecheck
+        def no_return_type_wrong() -> None:
+            return True
+        self.assertRaises(TypeError, no_return_type_wrong)
+        no_return_type()
+
     def test_valid_pass(self):
         validated(-1)
 
@@ -59,6 +72,15 @@ class TypecheckTestCase(unittest.TestCase):
     def test_valid_result_fails(self):
         self.assertRaises(ValidationError, validated, 3)
 
+    def test_valid_no_return(self):
+        @validate
+        def no_return_type() -> None:
+            print("not returning anything!")
+        @validate
+        def no_return_type_wrong() -> None:
+            return True
+        self.assertRaises(TypeError, no_return_type_wrong)
+        no_return_type()
 
 if __name__ == "__main__":
     unittest.main()
