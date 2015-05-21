@@ -1,5 +1,4 @@
-TYPES EVERYWHERE
--------------------
+PY-TYPES (PYPES?!)
+-------------
 
-I heard you like types so I put types in your python  
-so you can python while you type
+Gradual typing for Python 3. Python 2 won't be supported due to lack of annotations in functions.

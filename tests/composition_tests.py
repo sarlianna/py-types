@@ -5,7 +5,7 @@ from asserts.asserts import (
     ValidationError,
     ValidationResult,
 )
-from composition import (
+from runtime.composition import (
     JointType,
     IntersectionType,
     JointValidation,
