@@ -19,3 +19,7 @@ class Number(metaclass=TypeFamily):
 class ArrayList(metaclass=TypeFamily):
     type_members = [list, bytes, bytearray, memoryview, Sequence]
 
+
+@typeclass
+class Any(metaclass=TypeFamily):
+    type_members = [object]

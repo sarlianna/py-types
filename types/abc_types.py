@@ -6,6 +6,9 @@ Classes that inherit from others will automatically have their types extended.""
 from abc import (
     ABCMeta,
 )
+from functools import (
+    wraps,
+)
 
 def register(type_class):
     """Register a class to its given __registered_subclasses__
@@ -38,14 +41,15 @@ class TypeFamily(metaclass=ABCMeta):
         if attrs.has_key(type_key):
             types.extend(attrs[type_key])
 
-        attrs["_registered_types"] = types
+        attrs["__registered_types__"] = types
         return type.__new__(cls, name, bases, attrs)
-
 
     @property
     def __registered_subclasses__(self):
-        return self._registered_types
+        return self.__registered_types__
 
     @__registered_subclasses__.setter
     def __registered_subclasses__(self, val):
-        self._registered_types = val
+        self.__registered_types__ = val
+
+    compare_to = isinstance
