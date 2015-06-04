@@ -1,26 +1,18 @@
 """Module for structured data types -- lists and dicts.
 Defines type families that type check each of their members."""
-
-from abc_types import (
-    TypeFamily,
-    typeclass,
-)
 from collections.abc import (
     Sequence,
 )
-from .common_families import (
+
+from types.abc_types import (
+    TypeFamily,
+    typeclass,
+)
+from types.common_families import (
     Any,
 )
-from functools import (
-    wraps,
-)
+from types.comparison import compare
 
-
-def compare_to_or_isinstance(value, intended):
-    if intended.compare_to:
-        return intended.compare_to(value, intended)
-    else:
-        return isinstance(value, intended)
 
 
 @typeclass
@@ -53,7 +45,7 @@ class TypedSequence(metaclass=TypeFamily):
             return False
 
         for val in value:
-            if not compare_to_or_isinstance(val, intended.__restricted_to__):
+            if not compare(val, intended.__restricted_to__):
                 return False
 
         return True
@@ -95,11 +87,11 @@ class TypedDict(metaclass=TypeFamily):
         Assumes that intended is a TypedDict instance."""
 
         def walk_and_compare(current_key, current_val):
-            if current_key and not compare_to_or_isinstance(current_key, intended.__keys_restricted_to__):
+            if current_key and not compare(current_key, intended.__keys_restricted_to__):
                 return False
 
             if not isinstance(current_val, dict):
-                if not compare_to_or_isinstance(current_val, intended.__vals_restricted_to__):
+                if not compare(current_val, intended.__vals_restricted_to__):
                     return False
                 return True
 

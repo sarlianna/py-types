@@ -28,7 +28,7 @@ class TypeFamily(metaclass=ABCMeta):
     """
     Abstract base class for type families.
     Allows inheriting classes to set the class attribute "type_members",
-    which will have the parents' _registered_types be extended with those in "type_members".
+    which will have the parents' __registered_types__ be extended with those in "type_members".
     reference: stackoverflow.com/questions/11675840/python-class-properties
     """
 

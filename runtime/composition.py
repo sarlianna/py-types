@@ -1,14 +1,15 @@
+"""Methods to compose validators and types in different ways.
+Unsure on current planned scope or usage for this, so work on it will probably be kept to a minimum.
+"""
+
 import functools
-import abc
-from asserts.asserts import (
+from runtime.asserts import (
     ValidationError,
     ValidationResult,
 )
 from collections import Callable
 
-# TODO: nothing has a consistent interface or consistent way of working with them.
-# thus, we need to have custom comparison methods to call and use that abstract away the differences.
-# CORE CHANGES NEEDED
+# TODO: update to use compare_to interface
 
 # -----------------------
 # Type composition functions
@@ -18,6 +19,7 @@ from collections import Callable
 def or_comp(*types):
     """Returns a value that can be called with isinstance to determine if the value is any of the types given in args"""
     # isinstance accepts a tuple of objects, so we just make a tuple of the list.
+    # TODO: ensure our compare_to interface can also accept a list of tuples.
     return tuple(types)
 
 
@@ -31,7 +33,7 @@ def and_val(f, g):
   Validator results: {f} - {f_res}
                      {g} - {g_res}""".format(f=f, g=g, actual=value, f_res=f_result, g_res=g_result))
         return (f_result and g_result)
-    return f_or_g
+    return f_and_g
 
 
 def or_val(f, g):
@@ -80,45 +82,3 @@ def or_exc(f, g):
         else:
             return False
     return f_or_g
-
-
-# ------------------------
-# Type abstractions
-# ------------------------
-
-def JointType(*types):
-    return or_comp(types)
-
-
-# TODO: currently this has to be called with @validate, not @typecheck
-# @validate should be changed to handle this, because I can't find a way to represent this
-# as an isinstance()-able class.
-# this is really inconsistent, ugh
-class IntersectionType(object):
-    def __init__(self, *args):
-        self.types = args
-
-    def __call__(self, value):
-        failed = False
-
-        for t in self.types:
-            # please no
-            if not isinstance(value, t) and not (isinstance(t, Callable) and t(value)):
-                failed = True
-                break
-        if failed:
-            reason = """value was not subclass of all expected types:
-      Types: {}
-      value's type: {}""".format(self.types, type(value))
-        else:
-            reason = None
-        return (not failed, reason)
-
-
-class JointValidation(object):
-    def __init__(self, *args):
-        self.types = args
-
-    def __call__(self, value):
-        type_check = functools.reduce(or_val, self.types)
-        return type_check(value)

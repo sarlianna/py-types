@@ -3,7 +3,8 @@ import inspect
 import sys
 import argparse
 
-from asserts.asserts import typecheck
+from ..runtime.asserts import typecheck
+from ..types.comparison import compare
 
 
 @typecheck
@@ -36,7 +37,7 @@ def parse(filename: str) -> list:
         # initial pass -- get all function definitions, their names, args, and annotations
         @typecheck
         def get_name_annotations(block) -> dict:
-            if not isinstance(block, ast.FunctionDef):
+            if not compare(block, ast.FunctionDef):
                 return
             return_annotation = block.returns
             arg_annotations = []

@@ -1,6 +1,6 @@
 """Common type families for ease-of-use."""
 
-from abc_types import (
+from types.abc_types import (
     TypeFamily,
     typeclass,
 )
