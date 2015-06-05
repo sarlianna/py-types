@@ -1,4 +1,4 @@
-from asserts import (
+from runtime.asserts import (
     typecheck,
     validate,
     ValidationError,

@@ -1,8 +1,6 @@
 import functools
 from collections import namedtuple
 
-from types.comparison import compare
-
 # ------------------
 # type check
 # ------------------
@@ -14,7 +12,7 @@ def typecheck(f):
 
 def _compare_types(f, name, arg):
     expected = f.__annotations__.get(name, None)
-    if expected and not compare(arg, expected):
+    if expected and not isinstance(arg, expected):
         raise TypeError("{} was expected to be of type {}, not {}".format(arg, expected, type(arg)))
     if name == "return" and expected is None and arg:
         raise TypeError("Expected no return, but got return {} of type {}".format(arg, type(arg)))
@@ -29,7 +27,7 @@ def validate(f):
     return _core_wrapper(f, _run_validator)
 
 
-ValidationResult = namedtuple('ValidationResult', 'message')
+ValidationResult = namedtuple('ValidationResult', 'value', 'message')
 
 
 class ValidationError(BaseException):

@@ -1,13 +1,11 @@
 import unittest
-from asserts.asserts import (
+from runtime.asserts import (
     typecheck,
     validate,
     ValidationError,
     ValidationResult,
 )
 from runtime.composition import (
-    JointType,
-    IntersectionType,
     JointValidation,
 )
 from collections import (
@@ -38,17 +36,7 @@ def custom_validator_two(a: int) -> ValidationResult:
         return ValidationResult(False, "value was smaller than 10")
 
 
-range_validator = JointValidation(custom_validator,
-                                  custom_validator_two)
-
-
-@validate
-def joint_validated(a: range_validator) -> range_validator:
-    return a + 5
-
 # types
-
-str_or_int = JointType(str, int)
 
 
 @typecheck
@@ -88,15 +76,6 @@ class Palindrome(object):
     def __str__(self):
         return str(self.value)
 
-str_palindrome = IntersectionType(Palindrome, str)
-
-# note that this is a break of abstraction that I plan to fix
-# (this should be called with @typecheck, not @validate)
-@validate
-def print_palindrome(pal: str_palindrome) -> None:
-    print("{} say it backwards {}".format(pal, reverse_string(pal)))
-
-
 # Other examples
 
 # dependent types maybe? not sure this really counts as dependent as-is
@@ -114,7 +93,6 @@ class VectorLength_X(list):
             reason = "value was not of length {}".format(self.length)
         return result, reason
 
-        
 
 @typecheck
 def add_lists_len_x(length: int) -> Callable:
@@ -134,27 +112,6 @@ class CompositionTestCase(unittest.TestCase):
     def test_joint_validation_passes(self):
         joint_validated(-1)
         joint_validated(11)
-
-    def test_joint_validation_fails(self):
-        self.assertRaises(ValidationError, joint_validated, 1)
-        self.assertRaises(ValidationError, joint_validated, 4)
-        self.assertRaises(ValidationError, joint_validated, 7)
-        self.assertRaises(TypeError, joint_validated, "str")
-        self.assertRaises(TypeError, joint_validated, None)
-
-    def test_joint_types_pass(self):
-        type_checked(5, "a")
-        type_checked(12, "b")
-
-    def test_joint_types_fail(self):
-        self.assertRaises(TypeError, type_checked_bad_return, 1)
-        self.assertRaises(TypeError, type_checked_bad_return, "a")
-        self.assertRaises(TypeError, type_checked_bad_return, 12)
-        self.assertRaises(TypeError, type_checked_bad_return, None)
-
-    def test_intersection_types_pass(self):
-        print_palindrome("tacocat")
-        print_palindrome("bob")
 
     def test_intersection_types_fail(self):
         self.assertRaises(TypeError, print_palindrome, "taco")
