@@ -4,13 +4,19 @@ from runtime.asserts import (
     ValidationError,
     ValidationResult,
 )
+from runtime.schema import (
+    schema
+)
 
 import unittest
+from copy import deepcopy
 
 
 #----------------------
 # Test fodder
 #----------------------
+
+# asserts.py
 
 @typecheck
 def type_checked(best: int, slot: str) -> str:
@@ -37,6 +43,27 @@ def validated(a: custom_validator) -> custom_validator:
 @typecheck
 def no_return_type() -> None:
     pass
+
+# schema.py
+
+test_schema = {
+    "hello": int,
+    "world": {
+        "people": [str],
+        "version": str
+    },
+    "optional": (int, None)
+}
+
+@schema
+def schema_checked(a: test_schema) -> test_schema:
+    b = deepcopy(a)
+    b["hello"] += 5
+    if b["world"]["people"]:
+        b["world"]["people"][0] = "Bob"
+    b["world"]["version"] += 1
+    return b
+
 
 #----------------------
 # Tests
@@ -81,6 +108,30 @@ class TypecheckTestCase(unittest.TestCase):
             return True
         self.assertRaises(TypeError, no_return_type_wrong)
         no_return_type()
+
+
+class SchemaTestCase(unittest.TestCase):
+    def test_schema_passes(self):
+        """Test correct schemas get through."""
+        test = {"hello": 5, "world": {"people": ["Alice"], "version": 1}}
+        with_optional = {"hello": 2, "world": {"people": ["Jack", "Jill"], "version": 0}, "optional": 20}
+        empty_people = {"hello": 4, "world": {"people": [], "version": 2}}
+
+        schema_checked(test)
+        schema_checked(with_optional)
+        schema_checked(empty_people)
+
+    def test_invalid_schema_throws(self):
+        tests = []
+        tests.append({"hello": "what?!"})
+        tests.append({"helloo": 5})
+        tests.append([("hey", "you")])
+        tests.append(2)
+        tests.append({"hello": 5, "world": {"people": "gone now"}})
+
+        for test in tests:
+            self.assertRaises(AssertionError, schema_checked, test)
+
 
 if __name__ == "__main__":
     unittest.main()

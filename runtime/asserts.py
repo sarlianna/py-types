@@ -27,7 +27,7 @@ def validate(f):
     return _core_wrapper(f, _run_validator)
 
 
-ValidationResult = namedtuple('ValidationResult', 'value', 'message')
+ValidationResult = namedtuple('ValidationResult', ['value', 'message'])
 
 
 class ValidationError(BaseException):
@@ -42,7 +42,6 @@ def _run_validator(f, name, arg):
             raise ValidationError("arg {} did not pass validation: {}".format(arg, reason))
     if name == "return" and validator is None and arg:
         raise ValidationError("Expected None but got a return value: {}".format(arg))
-
 
 
 #---------------------

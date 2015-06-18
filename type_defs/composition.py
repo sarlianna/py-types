@@ -9,7 +9,6 @@ from runtime.asserts import (
 )
 from collections import Callable
 
-# TODO: update to use compare_to interface
 
 # -----------------------
 # Type composition functions
@@ -19,7 +18,6 @@ from collections import Callable
 def or_comp(*types):
     """Returns a value that can be called with isinstance to determine if the value is any of the types given in args"""
     # isinstance accepts a tuple of objects, so we just make a tuple of the list.
-    # TODO: ensure our compare_to interface can also accept a list of tuples.
     return tuple(types)
 
 
@@ -60,9 +58,9 @@ def and_exc(f, g):
     """Ensures that neither f nor g throws an exception on their arguments."""
     # if they throw an exception then just let it pass.
     def f_and_g(*args, **kwargs):
-        f(*args, **kwargs)
-        g(*args, **kwargs)
-        return True
+        f_res = f(*args, **kwargs)
+        g_res = g(*args, **kwargs)
+        return (f_res, g_res)
     return f_and_g
 
 
@@ -70,15 +68,16 @@ def or_exc(f, g):
     """Ensures that one of f or g does not throw an exception on their arguments."""
     def f_or_g(*args, **kwargs):
         exc = False
+        results = []
         for func in [f, g]:
             if not exc:
                 try:
-                    func(*args, **kwargs)
-                except Exception as e:
+                    results.append(func(*args, **kwargs))
+                except Exception:
                     exc = True
 
         if not exc:
-            return True
+            return tuple(results)
         else:
             return False
     return f_or_g
