@@ -46,13 +46,15 @@ def no_return_type() -> None:
 
 # schema.py
 
+NoneType = type(None)
+
 test_schema = {
     "hello": int,
     "world": {
         "people": [str],
-        "version": str
+        "version": int
     },
-    "optional": (int, None)
+    "optional": (int, NoneType)
 }
 
 @schema
@@ -106,7 +108,7 @@ class TypecheckTestCase(unittest.TestCase):
         @validate
         def no_return_type_wrong() -> None:
             return True
-        self.assertRaises(TypeError, no_return_type_wrong)
+        self.assertRaises(ValidationError, no_return_type_wrong)
         no_return_type()
 
 

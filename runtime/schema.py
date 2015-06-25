@@ -37,17 +37,20 @@ def _format_asserts(form, data):
     """Checks that for each key value pair in form,
     there is a matching one in data where the value is the type
     specified in form."""
+    # convert form to a list of tuples; ensure data is in an expected form
     try:
         form_items = form.items()
+        assert isinstance(data, dict)
     except AttributeError:
         if not isinstance(form, Iterable):
             # in this case, do nothing.
             form_items = []
         else:
             form_items = form
+            assert isinstance(data, Iterable)
 
-    print("current form_items: {}".format(form_items))
     for key, value in form_items:
+        # test for absence of key (and if that's okay)
         if key not in data:
             try:
                 assert isinstance(None, value)
@@ -58,8 +61,8 @@ def _format_asserts(form, data):
             _format_asserts(value, data[key])
         elif isinstance(value, list):
             assert isinstance(data[key], list)
-            for item in value:
-                assert isinstance(item, form[key][0])
+            for item in data[key]:
+                assert isinstance(item, value[0])
         else:
             assert key in data
             assert isinstance(data[key], value)

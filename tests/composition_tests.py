@@ -5,8 +5,8 @@ from runtime.asserts import (
     ValidationError,
     ValidationResult,
 )
-from runtime.composition import (
-    JointValidation,
+from type_defs.composition import (
+    or_comp,
 )
 from collections import (
     Iterable,
@@ -38,6 +38,7 @@ def custom_validator_two(a: int) -> ValidationResult:
 
 # types
 
+str_or_int = or_comp(str, int)
 
 @typecheck
 def type_checked(best: int, slot: str) -> str_or_int:
@@ -109,15 +110,6 @@ def add_lists_len_x(length: int) -> Callable:
 #-------------------------
 
 class CompositionTestCase(unittest.TestCase):
-    def test_joint_validation_passes(self):
-        joint_validated(-1)
-        joint_validated(11)
-
-    def test_intersection_types_fail(self):
-        self.assertRaises(TypeError, print_palindrome, "taco")
-        self.assertRaises(TypeError, print_palindrome, 121)
-        self.assertRaises(TypeError, print_palindrome, [1, 2, 1])
-
     def test_other_dependent_passes(self):
         # optimally, this setup is built into the type?
         add_lists_3 = add_lists_len_x(3)
