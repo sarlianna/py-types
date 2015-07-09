@@ -62,7 +62,10 @@ def _format_asserts(form, data):
         elif isinstance(value, list):
             assert isinstance(data[key], list)
             for item in data[key]:
-                assert isinstance(item, value[0])
+                # Check that every item in data is the same as form_items' value[0].
+                # Assumes a homogenous list -- data can't be different types.
+                # Not sure how desirable that would be as a feature
+                _format_asserts(item, value[0])
         else:
             assert key in data
             assert isinstance(data[key], value)
