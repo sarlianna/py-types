@@ -17,7 +17,9 @@ class TypedSequence(metaclass=TypeFamily):
     type_members is enforced on the actual sequence itself, and __restricted_to__ is enforced
     on each element.
 
-    This class' compare_to always compares to Sequence, so you could probably leave type_members empty."""
+    This class' compare_to always compares to Sequence, so you could probably leave type_members empty.
+    __init__ expects only a type value that it will restrict its members to.  The default is Any.
+    """
     type_members = [Sequence]
     _restricted_to = None
 
