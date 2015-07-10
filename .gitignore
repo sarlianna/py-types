@@ -3,3 +3,6 @@ pycache/*
 *.swp
 *.swo
 *.pyc
+build/
+dist/
+py_types.egg-info/
