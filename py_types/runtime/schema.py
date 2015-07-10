@@ -42,9 +42,11 @@ def _format_asserts(form, data):
         form_items = form.items()
         assert isinstance(data, dict)
     except AttributeError:
-        if not isinstance(form, Iterable):
-            # in this case, do nothing.
+        # str is an iterable, but we want to handle it here
+        if not isinstance(form, Iterable) or isinstance(form, str):
+            # here just checking a single item is enough.
             form_items = []
+            assert isinstance(data, form)
         else:
             form_items = form
             assert isinstance(data, Iterable)
@@ -65,7 +67,7 @@ def _format_asserts(form, data):
                 # Check that every item in data is the same as form_items' value[0].
                 # Assumes a homogenous list -- data can't be different types.
                 # Not sure how desirable that would be as a feature
-                _format_asserts(item, value[0])
+                _format_asserts(value[0], item)
         else:
             assert key in data
             assert isinstance(data[key], value)

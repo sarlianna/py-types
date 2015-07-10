@@ -85,7 +85,7 @@ class TypecheckTestCase(unittest.TestCase):
     def test_check_no_return(self):
         @typecheck
         def no_return_type() -> None:
-            print("not returning anything!")
+            pass
         @typecheck
         def no_return_type_wrong() -> None:
             return True
@@ -104,7 +104,7 @@ class TypecheckTestCase(unittest.TestCase):
     def test_valid_no_return(self):
         @validate
         def no_return_type() -> None:
-            print("not returning anything!")
+            pass
         @validate
         def no_return_type_wrong() -> None:
             return True
