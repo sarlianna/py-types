@@ -1,10 +1,10 @@
-from runtime.asserts import (
+from py_types.runtime.asserts import (
     typecheck,
     validate,
     ValidationError,
     ValidationResult,
 )
-from runtime.schema import (
+from py_types.runtime.schema import (
     schema
 )
 

@@ -1,7 +1,7 @@
 import unittest
-from type_defs.base import TypeFamily
-from type_defs.common import Any
-from type_defs.structured_types import (
+from py_types.type_defs.base import TypeFamily
+from py_types.type_defs.common import Any
+from py_types.type_defs.structured_types import (
     TypedSequence,
     TypedDict,
 )

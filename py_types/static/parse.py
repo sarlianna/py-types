@@ -3,7 +3,7 @@ import inspect
 import sys
 import argparse
 
-from runtime.asserts import typecheck
+from ..runtime.asserts import typecheck
 
 
 @typecheck

@@ -4,10 +4,10 @@ from collections.abc import (
     Sequence,
 )
 
-from type_defs.base import (
+from .base import (
     TypeFamily,
 )
-from type_defs.common import (
+from .common import (
     Any,
 )
 

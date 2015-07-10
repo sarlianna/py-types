@@ -1,6 +1,6 @@
 """Common type families for ease-of-use."""
 
-from type_defs.base import (
+from .base import (
     TypeFamily,
 )
 

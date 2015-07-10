@@ -1,11 +1,11 @@
 import unittest
-from runtime.asserts import (
+from py_types.runtime.asserts import (
     typecheck,
     validate,
     ValidationError,
     ValidationResult,
 )
-from type_defs.composition import (
+from py_types.type_defs.composition import (
     or_comp,
 )
 from collections import (

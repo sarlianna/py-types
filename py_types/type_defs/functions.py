@@ -6,11 +6,8 @@ from collections.abc import (
     Callable,
 )
 
-from type_defs.base import (
+from .base import (
     TypeFamily,
-)
-from type_defs.common import (
-    Any,
 )
 
 
@@ -44,7 +41,7 @@ class Function(metaclass=TypeFamily):
         if not isinstance(instance, Callable):
             return False
 
-        if not hasattr(instance, __code__):
+        if not hasattr(instance, "__code__"):
             instance = instance.__call__
         f_code = instance.__code__
 

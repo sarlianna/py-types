@@ -2,12 +2,9 @@
 Unsure on current planned scope or usage for this, so work on it will probably be kept to a minimum.
 """
 
-import functools
-from runtime.asserts import (
+from ..runtime.asserts import (
     ValidationError,
-    ValidationResult,
 )
-from collections import Callable
 
 
 # -----------------------

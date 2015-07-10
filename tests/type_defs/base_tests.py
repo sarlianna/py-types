@@ -1,5 +1,5 @@
 import unittest
-from type_defs.base import (
+from py_types.type_defs.base import (
     TypeFamily,
 )
 
@@ -55,6 +55,10 @@ class TypeFamilyTestCase(unittest.TestCase):
         self.assertTrue(isinstance([5], UnrelatedType))
         self.assertFalse(isinstance("h", UnrelatedType))
         self.assertFalse(isinstance(5, UnrelatedType))
+
+
+class ValidatedTypeTestCase(unittest.TestCase):
+    pass
 
 
 if __name__ == "__main__":
