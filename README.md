@@ -89,11 +89,31 @@ building out new types inspired by Haskell/Rust but suitable for python.
 There are some working definitions and code in type_defs, but they need some serious work and don't cover
 anywhere near what they should.
 
+#### base, inheritable type classes
+
 They do provide extensible "types" via the `type_defs.base.TypeFamily` metaclass, and provide some interesting
 data types such as `type_defs.structured_types.TypedSequence`.  
 If you do extend types using TypeFamily, the class will automatically return true for isinstance calls when compared
 with any member of `my_class.type_members` (declared at top level).  If you need custom behaviour that works with
 the type and schema checks, make sure that any custom logic is in the class's `__instancecheck__`.
+
+`type_defs.base.ValidatedType` has been added, which essentially inherits a list of validator functions and type
+values.  Its isinstance is customized to run the validators on the given value.
+
+
+#### function types
+
+Added a custom Function type in `type_defs.functions`.  This type allows you to specify and check for callables with
+specific arity (number of arguments) and return types. Added because checking against Callable was not a very good guarantee!
+
+Note that these types purposefully do not check for a schema return type or handle inoperability there. This is meant so that
+moving to static checking might be easier, though honestly I don't know a lot about what that would involve yet.
+
+If you'd like a particular function to be schema checked at runtime, please move to a definition that allows the @schema
+decorator.  Function types are mostly just meant to help typecheck functions that don't need the detail schemas involve.
+
+
+#### notes on use of isinstance
 
 Note that in any type-checking or schema code, "union" types can be given with a tuple, which will match
 any of the types (because the type checking is done via isinstance).  So, the following code will typecheck successfully
@@ -105,6 +125,9 @@ def retry_if_failed(code: (int, None)) -> None:
     # must handle None or int
     pass
 ```
+
+Because everything is done through isinstance, the custom types should compose and work normally with other types, classes, etc.
+
 
 Future enhancements
 ----------------
