@@ -40,7 +40,7 @@ class ValidatedType(type):
     Abstract base class for types that want to run custom validators on their members.
     inheritance through "type_members" is preserved, and inheritance of validators
     through "validators" is also in place.
-    Validators are considered to 
+    Validators are considered to be callables that return a bool.
     """
 
     def __new__(cls, name, bases, attrs):
