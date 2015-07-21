@@ -4,6 +4,18 @@ Trying to follow [semantic versioning](http://semver.org) as much as possible.
 
 ## [Unreleased][unreleased]
 
+## Added
+
+- Improved error messaging for schema. It will now give the function and argument name along with the original stack trace.
+
+## Changed
+
+- Changed the directory structure for easier importing.  The previous release forced the user to use the path `py_types.py_types`.
+- Fixed a bug that did not allow typecheck and schema decorators to be used together on the same function.
+  - I thought this was tested before, but it appears it wasn't.
+
+- `type_defs.composition` has been removed. [DEPRECATED]
+
 
 ## 0.0.1a - 2015-07-10
 Any items with the [UNUSED] tag are not normally run as part of the intended api, and are probably undocumented.

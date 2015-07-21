@@ -26,7 +26,7 @@ schema assert examples (with built-in types):
          "people": [str],
          "version": int
      },
-     "optional": (int, NoneType)
+     "optional": (int, type(None))
  }
 
  @schema
@@ -121,7 +121,7 @@ with either an int or None instance.
 
 ```python
 @typecheck
-def retry_if_failed(code: (int, None)) -> None:
+def retry_if_failed(code: (int, type(None))) -> type(None):
     # must handle None or int
     pass
 ```
