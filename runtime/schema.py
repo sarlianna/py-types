@@ -5,8 +5,12 @@ it validates that the given argument matches the structure of the annotation.
 If an annotation is not a dictionary or iterable, it simply ignores it, allowing composition
 with asserts.py's typecheck decorator."""
 
+# TODO: Improve error messaging so it includes which key/value pair failed, as well as
+# what it got for that pair and what it expected.
+
 import functools
 from collections import Iterable
+import sys
 
 
 def schema(function):
@@ -30,7 +34,13 @@ def schema(function):
 def _validate_schema(f, name, arg):
     ann_schema = f.__annotations__.get(name, None)
     if ann_schema is not None:
-        _format_asserts(ann_schema, arg)
+        try:
+            _format_asserts(ann_schema, arg)
+        except Exception:
+            error = TypeError("Schema did not successfully verify in function {} for argument '{}'.".format(f, name))
+            error.__suppress_context__ = True
+            tb = sys.exc_info()[2]
+            raise error.with_traceback(tb)
 
 
 def _format_asserts(form, data):
