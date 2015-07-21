@@ -12,10 +12,15 @@ def typecheck(f):
 
 def _compare_types(f, name, arg):
     expected = f.__annotations__.get(name, None)
+    # If the annotation isn't a type (a class), just don't check it.
+    # Done to allow inter-op with other decorators using annotations.
+    if type(expected) is not type:
+        return
+
+    if name == "return" and (expected is type(None) or expected is None) and arg:
+        raise TypeError("Expected no return, but got return {} of type {}".format(arg, type(arg)))
     if expected and not isinstance(arg, expected):
         raise TypeError("{} was expected to be of type {}, not {}".format(arg, expected, type(arg)))
-    if name == "return" and expected is None and arg:
-        raise TypeError("Expected no return, but got return {} of type {}".format(arg, type(arg)))
 
 
 # -------------------
