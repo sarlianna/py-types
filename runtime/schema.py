@@ -26,6 +26,13 @@ from collections import Iterable
 import sys
 
 
+class SchemaOr(object):
+    """A class that allows you to allow a value as long as any of the given schemas are valid.
+    Logic handling this class specifically is in _format_asserts."""
+    def __init__(self, *annotations):
+        self.schemas = annotations
+
+
 def schema(function):
     """Check that a function's arguments match the given schemas."""
 
@@ -67,6 +74,8 @@ def _format_asserts(form, data):
         form_items = form.items()
         assert isinstance(data, dict)
     except AttributeError:
+        if isinstance(form, SchemaOr):
+            return any([_format_asserts(sch, data) for sch in form.schemas])
         # str is an iterable, but we want to handle it here
         if not isinstance(form, Iterable) or isinstance(form, str):
             # here just checking a single item is enough.
