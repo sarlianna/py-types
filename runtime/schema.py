@@ -59,7 +59,6 @@ def _validate_schema(f, name, arg):
         except AssertionError:
             error = TypeError("Schema did not successfully verify in function {} for argument '{}'.".format(f, name))
             error.__suppress_context__ = True
-            print(sys.exc_info())
             tb = sys.exc_info()[2]
             raise error.with_traceback(tb)
 
@@ -75,19 +74,28 @@ def _format_asserts(form, data):
         assert isinstance(data, dict)
     except AttributeError:
         if isinstance(form, SchemaOr):
-            error_count = 0
+            # Set a flag every time a schema fails,
+            # if it doesn't fail then shortcircuit with a success.
+            had_assertion_error = False
             for sch in form.schemas:
+                had_assertion_error = False
                 try:
                     _format_asserts(sch, data)
                 except AssertionError:
-                    error_count += 1
-            if error_count == len(form.schemas):
-                raise TypeError("SchemaOr did not succeed for any possible schema.")
+                    had_assertion_error = True
+                if not had_assertion_error:
+                    break
+
+            if had_assertion_error:
+                raise AssertionError("SchemaOr did not succeed for any possible schema.")
+            return
+
         # str is an iterable, but we want to handle it here
-        if not isinstance(form, Iterable) or isinstance(form, str):
+        elif not isinstance(form, Iterable) or isinstance(form, str):
             # here just checking a single item is enough.
             form_items = []
             assert isinstance(data, form)
+
         else:
             form_items = form
             assert isinstance(data, Iterable)
@@ -152,12 +160,22 @@ def _check_values_list(form_items, data):
         non-homogenous lists. The dict code handles nested lists that are only one element long itself.
         one-element lists are assumed to match lists of any size,
         as long as their members validate against the schema's only member."""
-    assert len(data) == len(form_items)
+    # data having no len() is fine as long as schema has no len()
+    try:
+        form_len = len(form_items)
+    except TypeError:
+        form_len = None
+    try:
+        data_len = len(data)
+    except TypeError:
+        data_len = None
+
+    assert form_len == data_len
     for index, value in enumerate(form_items):
         if isinstance(value, dict):
             assert isinstance(data[index], dict)
             _format_asserts(value, data[index])
-        if isinstance(value, list):
+        elif isinstance(value, list):
             assert isinstance(data[index], (list, tuple))
             if len(data[index]) == 1:
                 for item in data[index]:

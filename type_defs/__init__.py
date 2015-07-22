@@ -19,10 +19,3 @@ from .structured_types import (
     TypedSequence,
     TypedDict,
 )
-from .composition import (
-    or_comp,
-    and_val,
-    or_val,
-    and_exc,
-    or_exc,
-)
