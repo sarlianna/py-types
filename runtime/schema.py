@@ -56,7 +56,7 @@ def _validate_schema(f, name, arg):
     if ann_schema is not None:
         try:
             _format_asserts(ann_schema, arg)
-        except Exception:
+        except AssertionError:
             error = TypeError("Schema did not successfully verify in function {} for argument '{}'.".format(f, name))
             error.__suppress_context__ = True
             print(sys.exc_info())
@@ -75,7 +75,14 @@ def _format_asserts(form, data):
         assert isinstance(data, dict)
     except AttributeError:
         if isinstance(form, SchemaOr):
-            return any([_format_asserts(sch, data) for sch in form.schemas])
+            error_count = 0
+            for sch in form.schemas:
+                try:
+                    _format_asserts(sch, data)
+                except AssertionError:
+                    error_count += 1
+            if error_count == len(form.schemas):
+                raise TypeError("SchemaOr did not succeed for any possible schema.")
         # str is an iterable, but we want to handle it here
         if not isinstance(form, Iterable) or isinstance(form, str):
             # here just checking a single item is enough.
