@@ -98,7 +98,7 @@ with any member of `my_class.type_members` (declared at top level).  If you need
 the type and schema checks, make sure that any custom logic is in the class's `__instancecheck__`.
 
 `type_defs.base.ValidatedType` has been added, which essentially inherits a list of validator functions and type
-values.  Its isinstance is customized to run the validators on the given value.
+values.  Its `__instancecheck__` is customized to run the validators on the given value.
 
 
 #### function types
@@ -106,16 +106,15 @@ values.  Its isinstance is customized to run the validators on the given value.
 Added a custom Function type in `type_defs.functions`.  This type allows you to specify and check for callables with
 specific arity (number of arguments) and return types. Added because checking against Callable was not a very good guarantee!
 
-Note that these types purposefully do not check for a schema return type or handle inoperability there. This is meant so that
-moving to static checking might be easier, though honestly I don't know a lot about what that would involve yet.
-
-If you'd like a particular function to be schema checked at runtime, please move to a definition that allows the @schema
-decorator.  Function types are mostly just meant to help typecheck functions that don't need the detail schemas involve.
+Note that these types purposefully do not check for a schema return type or handle inoperability there.  The Function type will
+only compare the direct return type of the function given.  
+If you'd like a particular function's return value to be schema checked at runtime, just define the function with the @schema
+decorator.
 
 
 #### notes on use of isinstance
 
-Note that in any type-checking or schema code, "union" types can be given with a tuple, which will match
+Note that in any type-checking, "union" types can be given with a tuple, which will match
 any of the types (because the type checking is done via isinstance).  So, the following code will typecheck successfully
 with either an int or None instance.
 
@@ -128,10 +127,14 @@ def retry_if_failed(code: (int, type(None))) -> type(None):
 
 Because everything is done through isinstance, the custom types should compose and work normally with other types, classes, etc.
 
+Please note that some cases of using this with the schema decorator may not work as intended -- if you want to accept multiple
+types or schemas with the schema decorator, please use the the `runtime.schema.SchemaOr` class with the types/schemas as args.
+
 
 Future enhancements
 ----------------
 
 Next up on the to-do list for this project:
+- full test coverage! Currently missing schema tests and Function tests.
 - add an installation package to pypi.
 - static type checking! A tool to run and check what it can statically, and leave in run-time checks for what it can't.
