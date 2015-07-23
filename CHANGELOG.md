@@ -6,11 +6,12 @@ Trying to follow [semantic versioning](http://semver.org) as much as possible.
 
 ### Added
 
-- Improved error messaging for schema. It will now give the function and argument name along with the original stack trace.
+- Added error messaging for schema. It will now give the function and argument name, path to the part of the schema it was looking at
+    (e.g. 'data[0]["key1"]'), and the expected and actual type.
 
 ### Changed
 
-- Improved error messaging for typecheck.
+- Improved error messaging for typecheck; it now specifies what the expected and actual values were.
 - Changed the directory structure for easier importing.  The previous release forced the user to use the path `py_types.py_types`.
 - Fixed a bug that did not allow typecheck and schema decorators to be used together on the same function.
   - I thought this was tested before, but it appears it wasn't.
