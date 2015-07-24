@@ -2,13 +2,15 @@ from setuptools import (
     setup,
     find_packages,
 )
-#from os import path
+from os import path
 
-#here = path.abspath(path.dirname(__file__))
+here = path.abspath(path.dirname(__file__))
 
-#with open(path.join(here, "README.md")) as f:
-#    long_description = f.read()
-long_description = "stuff will go here eventually"
+with open(path.join(here, "README.md")) as rdme:
+    with open(path.join(here, "CHANGELOG.md")) as chlog:
+        readme = rdme.read()
+        changes = chlog.read()
+        long_description = readme + "\nCHANGELOG\n--------------------------------------\n" + changes
 
 
 setup(
