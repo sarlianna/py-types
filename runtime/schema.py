@@ -112,6 +112,10 @@ def _format_asserts(form, data, assert_raise, key_path=None):
             else:
                 form_items = form
                 is_dict = False
+    except TypeError:
+        # This is raised from form.items() when form is explicity the class 'dict', in which case this is all we can check.
+        assert_raise(isinstance(data, dict), key_path, data, dict)
+        return
 
     if is_dict:
         _check_values_dict(form_items, data, assert_raise, key_path)
