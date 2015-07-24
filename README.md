@@ -55,6 +55,13 @@ def sum(li: list_schema) -> int:
 Note that custom types as well as built-ins can be used.  (See "Sane, friendlier types" for more on custom ones.)
 
 
+Homogenous, heterogenous lists - Note that when using a list as a schema, the schema decorator differentiates between two types of lists.
+If your schema's list value has one element, it's homogenous, and schema will assume that any length is acceptable, as long as every element
+matches the schema of the one element that the list has.  If there are multiple elements, it is heterogenous.  Schema assumes that the length
+of heterogenous lists must match the number of elements specified, and that each item in the list will match the schemas in the list in order.
+(I.e., they are order-dependent.)  
+If some of this behaviour seems undesirable, custom or validated types can be used to combat some of it, but there is no other solid solution.
+
 ####typechecking
 
 Type checking is meant to flat-out test values via isinstance.  Schemas use the same thing internally,
@@ -137,4 +144,5 @@ Future enhancements
 Next up on the to-do list for this project:
 - full test coverage! Currently missing schema tests and Function tests.
 - add an installation package to pypi.
+- Move some of this README to documentation instead.
 - static type checking! A tool to run and check what it can statically, and leave in run-time checks for what it can't.
