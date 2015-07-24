@@ -12,7 +12,7 @@ with open(path.join(here, "README.md")) as f:
 
 setup(
     name="py_types",
-    version="0.0.1a",
+    version="0.1.0a",
     description="Gradual typing for python 3.",
     long_description=long_description,
     url="https://github.com/zekna/py-types",
