@@ -5,5 +5,6 @@ Includes schema tools and runtime type checks."""
 from .schema import (
     schema,
     SchemaOr,
+    SchemaError
 )
 from .asserts import typecheck

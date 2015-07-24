@@ -6,31 +6,39 @@ If an annotation is not a dictionary or iterable, it simply ignores it, allowing
 with asserts.py's typecheck decorator.
 
 ON NESTED LIST SCHEMAS:
-Nested list schemas have been added, but please note all of the following pitfalls with the current implementation:
+These are full of odd pitfalls at the moment.
+Currently known possible pitfalls:
 - due to common usage of a tuple of types with isinstance, tuples in a schema are treated as a single value.
     (i.e. the entire tuple is passed to isinstance.) If you would actually like for the decorator to check
     for a sequence of items corresponding to the types given, please use a list.
     If you do use a list, it will allow the actual value to be a tuple.
 
 - The code currently checks only for isinstance(schema_type, list) for a list of types/schemas to check.
-    Other Iterable type objects will be ignored unless they return true for isinstance(instance, list)
+    Other Iterable type objects will be ignored unless they return true for isinstance(instance, list).
 
 - The code for checking a schema list _is_ dependent on order.  The order of the arguments must match the order declared
     in the schema.  This seems generally desirable to me at the moment, but note that there is no alternative."""
 
-# TODO: Improve error messaging so it includes which key/value pair failed, as well as
-# what it got for that pair and what it expected.
 
 import functools
 from collections import Iterable
 import sys
+from copy import copy
 
+#--------------------------
+# Types
+#--------------------------
 
 class SchemaOr(object):
     """A class that allows you to allow a value as long as any of the given schemas are valid.
     Logic handling this class specifically is in _format_asserts."""
     def __init__(self, *annotations):
         self.schemas = annotations
+
+
+#--------------------------
+# Main checking functions
+#--------------------------
 
 
 def schema(function):
@@ -54,97 +62,106 @@ def schema(function):
 def _validate_schema(f, name, arg):
     ann_schema = f.__annotations__.get(name, None)
     if ann_schema is not None:
-        try:
-            _format_asserts(ann_schema, arg)
-        except AssertionError:
-            error = TypeError("Schema did not successfully verify in function {} for argument '{}'.".format(f, name))
-            error.__suppress_context__ = True
-            tb = sys.exc_info()[2]
-            raise error.with_traceback(tb)
+        custom_raise = functools.partial(_assert_or_raise, f, arg, name)
+        _format_asserts(ann_schema, arg, custom_raise)
 
 
-def _format_asserts(form, data):
+def _format_asserts(form, data, assert_raise, key_path=None):
     """Checks that for each key value pair in form,
     there is a matching one in data where the value is the type
     specified in form."""
-    # convert form to a list of tuples; ensure data is in an expected form
+    if key_path is None:
+        key_path = []
     is_dict = True
+
     try:
         form_items = form.items()
-        assert isinstance(data, dict)
-    except AttributeError:
+        assert_raise(isinstance(data, dict), key_path, data, dict)
+    except AttributeError: # non-dictionary cases
         if isinstance(form, SchemaOr):
-            # Set a flag every time a schema fails,
-            # if it doesn't fail then shortcircuit with a success.
-            had_assertion_error = False
-            for sch in form.schemas:
-                had_assertion_error = False
+            reasons = []
+            for i, sch in enumerate(form.schemas):
+                or_key_path = copy(key_path)
+                or_key_path.append(i)
                 try:
-                    _format_asserts(sch, data)
-                except AssertionError:
-                    had_assertion_error = True
-                if not had_assertion_error:
+                    _format_asserts(sch, data, assert_raise, or_key_path)
+                except SchemaError as schema_err:
+                    reasons.append(schema_err.args[0])
+                if len(reasons) != i:
                     break
 
-            if had_assertion_error:
-                raise AssertionError("SchemaOr did not succeed for any possible schema.")
+            if len(reasons) == len(form.schemas):
+                message = "  SchemaOr failed to validate for any schema, with these reasons:\n  "
+                message = message + "\n  ".join(reasons)
+                # Just want it to throw the error with function/arg name info, so we pass False
+                assert_raise(False, key_path, data, form, message=message)
             return
 
-        # str is an iterable, but we want to handle it here
         elif not isinstance(form, Iterable) or isinstance(form, str):
-            # here just checking a single item is enough.
-            form_items = []
-            assert isinstance(data, form)
+            assert_raise(isinstance(data, form), key_path, data, form)
+            return
 
         else:
-            form_items = form
-            assert isinstance(data, Iterable)
+            assert_raise(isinstance(data, Iterable), key_path, data, form)
             if len(form) == 1:
-                for item in data:
-                    _format_asserts(form[0], item)
+                for ind, item in enumerate(data):
+                    ind_key_path = copy(key_path)
+                    ind_key_path.append(ind)
+                    _format_asserts(form[0], item, assert_raise, ind_key_path)
                 return
             else:
+                form_items = form
                 is_dict = False
+    except TypeError:
+        # This is raised from form.items() when form is explicity the class 'dict', in which case this is all we can check.
+        assert_raise(isinstance(data, dict), key_path, data, dict)
+        return
 
     if is_dict:
-        _check_values_dict(form_items, data)
+        _check_values_dict(form_items, data, assert_raise, key_path)
     else:
-        _check_values_list(form_items, data)
+        _check_values_list(form_items, data, assert_raise, key_path)
 
     return data
 
 
-def _check_values_dict(form_items, data):
+def _check_values_dict(form_items, data, assert_raise, key_path):
     """Comparison logic for dictionary schemas.
     Checks the key exists in the data,
     Recurses on dicts and lists,
     and otherwise just checks the value to the form_item's value via isinstance."""
     for key, value in form_items:
-        # test for absence of key (and if that's okay)
+
         if key not in data:
             try:
-                assert isinstance(None, value)
+                _call_assert_raise_no_key(assert_raise, isinstance(None, value), key, key_path, data, value)
             except TypeError:
-                assert isinstance(None, type(value))
+                _call_assert_raise_no_key(assert_raise, isinstance(None, type(value)), key, key_path, data, value)
+
         elif isinstance(value, dict):
-            assert isinstance(data[key], dict)
-            _format_asserts(value, data[key])
+            key_path.append(key)
+            assert_raise(isinstance(data[key], dict), key_path, data[key], dict)
+            _format_asserts(value, data[key], assert_raise, key_path)
+
         elif isinstance(value, list):
-            assert isinstance(data[key], (list, tuple))
+            key_path.append(key)
+            assert_raise(isinstance(data[key], (list, tuple)), key_path, data[key], (list, tuple))
+            # If one item is in the list, assume its homogenous and any length is okay.
             if len(data[key]) == 1:
-                for item in data[key]:
-                    # Check that every item in data is the same as form_items' value[0].
-                    # Assumes a homogenous list -- data can't be different types.
-                    # Not sure how desirable that would be as a feature
-                    _format_asserts(value[0], item)
+                for i, item in enumerate(data[key]):
+                    ind_key_path = copy(key_path)
+                    ind_key_path.append(i)
+                    _format_asserts(value[0], item, assert_raise, ind_key_path)
             else:
-                _format_asserts(value, data[key])
+                _format_asserts(value, data[key], assert_raise, key_path)
+
         else:
-            assert key in data
-            assert isinstance(data[key], value)
+            item_key_path = copy(key_path)
+            item_key_path.append(key)
+            assert_raise(isinstance(data[key], value), item_key_path, data[key], value)
 
 
-def _check_values_list(form_items, data):
+def _check_values_list(form_items, data, assert_raise, key_path):
     """Comparison logic for list schemas.
     Recurses on dicts and list, otherwise just compares the value via isinstance.
     Mostly looks exactly like the dict code but uses indexes instead of keys.  May be worth combining them!
@@ -170,17 +187,103 @@ def _check_values_list(form_items, data):
     except TypeError:
         data_len = None
 
-    assert form_len == data_len
+    assert_raise(form_len == data_len,
+                 key_path,
+                 data,
+                 form_items,
+                 message=("expected a heterogenous list of length {} at ".format(form_len) +
+                          "{name}" + "{},\n\tbut found length {} instead.".format(_render_key_path(key_path), data_len)))
+
     for index, value in enumerate(form_items):
+
         if isinstance(value, dict):
-            assert isinstance(data[index], dict)
-            _format_asserts(value, data[index])
+            key_path.append(index)
+            assert_raise(isinstance(data[index], dict), key_path, data[index], dict)
+            _format_asserts(value, data[index], assert_raise, key_path)
+
         elif isinstance(value, list):
-            assert isinstance(data[index], (list, tuple))
+            key_path.append(index)
+            assert_raise(isinstance(data[index], (list, tuple)), key_path, data[index], (list, tuple))
             if len(data[index]) == 1:
-                for item in data[index]:
-                    _format_asserts(value[0], item)
+                key_path.append(index)
+                for i, item in enumerate(data[index]):
+                    ind_key_path = copy(key_path)
+                    ind_key_path.append(i)
+                    _format_asserts(value[0], item, assert_raise, ind_key_path)
             else:
-                _format_asserts(value, data[index])
+                _format_asserts(value, data[index], assert_raise, key_path)
         else:
-            assert isinstance(data[index], value)
+            item_key_path = copy(key_path)
+            item_key_path.append(index)
+            assert_raise(isinstance(data[index], value), item_key_path, data[index], value)
+
+
+#---------------------------
+# Error handling/formatting functions
+#---------------------------
+
+
+def _call_assert_raise_no_key(assert_raise, cond, key, key_path, value, expected):
+    """Call assert_raise with an approparite message for a missing key."""
+    assert_raise(cond,
+                 key_path,
+                 value,
+                 expected,
+                 message=("expected key '{}' to exist and have value of type {} at ".format(key, expected) +
+                          "{name}" + "{},\n\tbut didn't find it.".format(_render_key_path(key_path))))
+
+
+def _assert_or_raise(function, arg, name, cond, key_path, value, expected, message=None):
+    """The 'I wish I had macros' function.  Just asserts that the conditions are true
+    and raises relevant info if not."""
+    if not cond:
+        if message is None:
+            schema_error = SchemaError(function, arg, name, key_path, value, expected)
+        else:
+            message = message.format(function=function, arg=arg, name=name)
+            complete_message = "\n    In {}, in schema for arg '{}':\n\t".format(function, name) + message
+            schema_error = SchemaError(function, arg, name, key_path, value, expected, message=complete_message)
+        raise schema_error from None
+
+
+class SchemaError(Exception):
+    """Class used for breaking out of schema verification with info on why."""
+    def __init__(self, function, arg, name, key_path, real, expected, *args, **kwargs):
+        super().__init__(self, *args)
+        self.function = function
+        self.arg = arg
+        self.name = name
+        self.key_path = key_path
+        self.real_value = real
+        self.expected_value = expected
+        if "message" in kwargs:
+            self.args = (kwargs["message"],)
+        else:
+            self.set_expected_type_message()
+
+    def set_expected_type_message(self):
+        """Set the standard message for type mismatch."""
+        key_path_trace = _render_key_path(self.key_path)
+        message_base = ("\n    In {function}, in schema for arg '{name}':\n\t" +
+                        "at {name}{key_path_trace}, expected value of type {expected},\n\t" +
+                        "but got value '{real}' with type {real_type} instead.")
+        message = message_base.format(function=self.function,
+                                      name=self.name,
+                                      key_path_trace=key_path_trace,
+                                      expected=self.expected_value,
+                                      real=self.real_value,
+                                      real_type=type(self.real_value))
+        self.args = (message,)
+
+
+def _render_key_path(key_path):
+    """Given a key path, render it in a '[0]["all"][0]["keys"]'-like format."""
+    def key_format(key):
+        if isinstance(key, str):
+            return "['{}']".format(key)
+        else:
+            return "[{}]".format(key)
+
+    key_path_strs = [key_format(key) for key in key_path]
+    key_path_trace = functools.reduce(lambda x, y: x + y, key_path_strs, "")
+    return key_path_trace

@@ -30,10 +30,10 @@ def _compare_types(f, name, arg):
         return
 
     if name == "return" and (expected is type(None) or expected is None) and arg:
-        raise TypeError("In function {}, expected no return value \n\tbut got return value {} of type {}".format(f, arg, type(arg)))
+        raise TypeError("\n    In {}:\n\texpected no return value \n\tbut got return value {} of type {}".format(f, arg, type(arg)))
     if expected and not isinstance(arg, expected):
         if name == "return":
             desc = "expected a return type of {},".format(expected)
         else:
-            desc = "expected argument {} to have type {},".format(name, expected)
-        raise TypeError("In function {}, {} \n\tbut instead got value {} with type {}.".format(f, desc, arg, type(arg)))
+            desc = "expected argument '{}' to have type {},".format(name, expected)
+        raise TypeError("\n    In {}:\n\t{}\n\tbut instead got value '{}' with type {}.".format(f, desc, arg, type(arg)))
