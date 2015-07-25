@@ -4,6 +4,16 @@ PY-TYPES (PYPES?!)
 Gradual typing for Python 3. Python 2 won't be supported due to lack of annotations in functions.
 
 
+Installation
+-----------
+
+Currently there is no package on PyPI, which will change soon.
+
+After cloning the repo, you can install with `pip install .`,
+or you can build your own wheel via `python setup.py bdist_wheel`.  After running the `bdist_wheel`
+command a .whl file (`py_types-<version>-py3-none-any.whl`) will be available in dist/.  
+You can pip install the .whl file directly.
+
 How to use
 -----------
 
