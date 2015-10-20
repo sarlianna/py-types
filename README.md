@@ -17,8 +17,12 @@ You can pip install the .whl file directly.
 How to use
 -----------
 
-At the moment, only runtime schemas and type-checking is supported.  These definitely have a performance overhead:
- I haven't profiled anything to check how much of an overhead there is though.
+At the moment, only runtime schemas and type-checking is supported.  These definitely have a performance overhead;
+for details about how this may affect a flask webserver, see profiling_info.md.  
+It's recommended that you use this library for production only, by defining the typecheck/schema functions based on your environment.
+(Import them for non-production code, define them as no-ops in production code.)
+Adding a switch to make schema and typecheck no-ops is on my todo list.
+
 
 ####schemas
 
@@ -154,5 +158,6 @@ Future enhancements
 Next up on the to-do list for this project:
 - full test coverage! Currently missing schema tests and Function tests.
 - add an installation package to pypi.
+- support for python 3.5's `typing` package
 - Move some of this README to documentation instead.
 - static type checking! A tool to run and check what it can statically, and leave in run-time checks for what it can't.

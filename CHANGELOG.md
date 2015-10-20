@@ -8,6 +8,7 @@ Trying to follow [semantic versioning](http://semver.org) as much as possible.
 
 - Added error messaging for schema. It will now give the function and argument name, path to the part of the schema it was looking at
     (e.g. 'data[0]["key1"]'), and the expected and actual type.
+- Added `profiling_info.md`, information about possible slowdown from using this in a production web api.
 
 ### Changed
 
