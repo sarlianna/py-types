@@ -21,7 +21,7 @@ At the moment, only runtime schemas and type-checking is supported.  These defin
 for details about how this may affect a flask webserver, see profiling_info.md.  
 It's recommended that you use this library for development/testing only, by defining the typecheck/schema functions based on your environment.
 (Import them for non-production code, define them as no-ops in production code.)
-Adding a switch to make schema and typecheck no-ops is on my todo list.
+I'd like to add this to the library itself, but don't have a clean way to do that at the moment.
 
 
 ####schemas
