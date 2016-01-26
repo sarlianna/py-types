@@ -19,3 +19,18 @@ class ArrayList(metaclass=TypeFamily):
 
 class Any(metaclass=TypeFamily):
     type_members = [object]
+
+
+class SumType(metaclass=TypeFamily):
+    """
+    Base class for a union type.
+    """
+    type_members = [Any]
+
+    def __init__(self, *args, **kwargs):
+        if "type_members" in kwargs:
+            self.type_members = kwargs["type_members"]
+            self._registered_types = kwargs["type_members"]
+        elif len(args) > 0:
+            self.type_members = args
+            self._registered_types = args

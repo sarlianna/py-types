@@ -40,4 +40,6 @@ setup(
     package_data={},
     data_files=[],
     entry_points={},
+
+    test_suite='nose2.collector.collector'
 )

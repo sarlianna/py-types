@@ -70,18 +70,3 @@ class ValidatedType(type):
         all_pass = all([validator(instance) for validator in all_valid_validators])
 
         return all_pass
-
-
-class SumType(metaclass=TypeFamily):
-    """
-    Base class for a union type.
-    """
-    type_members = [Any]
-
-    def __init__(self, *args, **kwargs):
-        if "type_members" in kwargs:
-            self.type_members = kwargs["type_members"]
-            self._registered_types = kwargs["type_members"]
-        elif len(args) > 0:
-            self.type_members = args
-            self._registered_types = args
