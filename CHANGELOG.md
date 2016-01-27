@@ -6,12 +6,25 @@ Trying to follow [semantic versioning](http://semver.org) as much as possible.
 
 ### Added
 
+### Changed
+
+## [v0.1.0a] - 2016-01-27
+
+### Added
+
+- Added full test coverage via nose2 and fully functional tests for all code.
 - Added error messaging for schema. It will now give the function and argument name, path to the part of the schema it was looking at
     (e.g. 'data[0]["key1"]'), and the expected and actual type.
+    - Note that in some cases the path has been inaccurate -- bug has not been fixed in this release.
+- TypeFamily, ValidatedType, and Function now raise errors if the types, validators, or return type given aren't usable.
+  (Usable means either: can be pased as the second argument to isinstance (types, return types) or can be called (validators).)
 - Added `profiling_info.md`, information about possible slowdown from using this in a production web api.
+- Added LICENSE containing an MIT License.
 
 ### Changed
 
+- Fixed error with SchemaOr nesting in schema checks; SchemaOr can now be used at any level of a schema without error.
+- Fixed various errors with schema checking and Function
 - Improved error messaging for typecheck; it now specifies what the expected and actual values were.
 - Changed the directory structure for easier importing.  The previous release forced the user to use the path `py_types.py_types`.
 - Fixed a bug that did not allow typecheck and schema decorators to be used together on the same function.
@@ -23,7 +36,7 @@ Trying to follow [semantic versioning](http://semver.org) as much as possible.
     If you wish to use functions you'd want to run through validate, please use a ValidatedType with `runtime.asserts.typecheck` instead.
 
 
-## 0.0.1a - 2015-07-10
+## [v0.0.1a] - 2015-07-10
 Any items with the [UNUSED] tag are not normally run as part of the intended api, and are probably undocumented.
 
 ### Added
@@ -51,4 +64,6 @@ Any items with the [UNUSED] tag are not normally run as part of the intended api
 - Heavily expanded README.md to include documentation and direction.
 
 
-[unreleased]: https://github.com/zekna/py-types/compare/v0.0.1a...HEAD
+[unreleased]: https://github.com/zekna/py-types/compare/v0.1.0a...HEAD
+[v0.1.a]: https://github.com/zekna/py-types/releases/tag/v0.1.0a
+[v0.0.1a]: https://github.com/zekna/py-types/releases/tag/v0.0.1a
