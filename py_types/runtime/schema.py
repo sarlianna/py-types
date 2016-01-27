@@ -31,7 +31,7 @@ from copy import copy
 
 class SchemaOr(object):
     """A class that allows you to allow a value as long as any of the given schemas are valid.
-    Logic handling this class specifically is in _format_asserts."""
+    Logic handling this class specifically is in _assert_format_matches."""
     def __init__(self, *annotations):
         self.schemas = annotations
 
@@ -63,10 +63,10 @@ def _validate_schema(f, name, arg):
     ann_schema = f.__annotations__.get(name, None)
     if ann_schema is not None:
         custom_raise = functools.partial(_assert_or_raise, f, arg, name)
-        _format_asserts(ann_schema, arg, custom_raise)
+        _assert_format_matches(ann_schema, arg, custom_raise)
 
 
-def _format_asserts(form, data, assert_raise, key_path=None):
+def _assert_format_matches(form, data, assert_raise, key_path=None):
     """Checks that for each key value pair in form,
     there is a matching one in data where the value is the type
     specified in form."""
@@ -84,10 +84,10 @@ def _format_asserts(form, data, assert_raise, key_path=None):
                 or_key_path = copy(key_path)
                 or_key_path.append(i)
                 try:
-                    _format_asserts(sch, data, assert_raise, or_key_path)
+                    _assert_format_matches(sch, data, assert_raise, or_key_path)
                 except SchemaError as schema_err:
                     reasons.append(schema_err.args[0])
-                if len(reasons) != i:
+                if len(reasons) != i + 1:
                     break
 
             if len(reasons) == len(form.schemas):
@@ -107,7 +107,7 @@ def _format_asserts(form, data, assert_raise, key_path=None):
                 for ind, item in enumerate(data):
                     ind_key_path = copy(key_path)
                     ind_key_path.append(ind)
-                    _format_asserts(form[0], item, assert_raise, ind_key_path)
+                    _assert_format_matches(form[0], item, assert_raise, ind_key_path)
                 return
             else:
                 form_items = form
@@ -129,19 +129,28 @@ def _check_values_dict(form_items, data, assert_raise, key_path):
     """Comparison logic for dictionary schemas.
     Checks the key exists in the data,
     Recurses on dicts and lists,
-    and otherwise just checks the value to the form_item's value via isinstance."""
+    and otherwise just checks the value to the form_item's value via isinstance.
+    
+    Also checks to be sure that all keys in the data source exist in form_items."""
     for key, value in form_items:
 
         if key not in data:
-            try:
-                _call_assert_raise_no_key(assert_raise, isinstance(None, value), key, key_path, data, value)
-            except TypeError:
-                _call_assert_raise_no_key(assert_raise, isinstance(None, type(value)), key, key_path, data, value)
+            if isinstance(value, SchemaOr):
+                _call_assert_raise_no_key(assert_raise, type(None) in value.schemas, key, key_path, data, value)
+            else:
+                try:
+                    _call_assert_raise_no_key(assert_raise, isinstance(None, value), key, key_path, data, value)
+                except TypeError:
+                    _call_assert_raise_no_key(assert_raise, isinstance(None, type(value)), key, key_path, data, value)
+
+        elif isinstance(value, SchemaOr):
+            key_path.append(key)
+            _assert_format_matches(value, data[key], assert_raise, key_path)
 
         elif isinstance(value, dict):
             key_path.append(key)
             assert_raise(isinstance(data[key], dict), key_path, data[key], dict)
-            _format_asserts(value, data[key], assert_raise, key_path)
+            _assert_format_matches(value, data[key], assert_raise, key_path)
 
         elif isinstance(value, list):
             key_path.append(key)
@@ -151,14 +160,23 @@ def _check_values_dict(form_items, data, assert_raise, key_path):
                 for i, item in enumerate(data[key]):
                     ind_key_path = copy(key_path)
                     ind_key_path.append(i)
-                    _format_asserts(value[0], item, assert_raise, ind_key_path)
+                    _assert_format_matches(value[0], item, assert_raise, ind_key_path)
             else:
-                _format_asserts(value, data[key], assert_raise, key_path)
+                _assert_format_matches(value, data[key], assert_raise, key_path)
 
         else:
             item_key_path = copy(key_path)
             item_key_path.append(key)
             assert_raise(isinstance(data[key], value), item_key_path, data[key], value)
+
+    for key in data.keys():
+        form_keys = [items[0] for items in form_items]
+        assert_raise(key in form_keys,
+                     key_path,
+                     data,
+                     form_items,
+                     message="did not expect key {} in ".format(key) + "{name}" + " with value {}".format(data[key])
+                     + "; key was not specified in schema.")
 
 
 def _check_values_list(form_items, data, assert_raise, key_path):
@@ -199,7 +217,11 @@ def _check_values_list(form_items, data, assert_raise, key_path):
         if isinstance(value, dict):
             key_path.append(index)
             assert_raise(isinstance(data[index], dict), key_path, data[index], dict)
-            _format_asserts(value, data[index], assert_raise, key_path)
+            _assert_format_matches(value, data[index], assert_raise, key_path)
+
+        elif isinstance(value, SchemaOr):
+            key_path.append(index)
+            _assert_format_matches(value, data[index], assert_raise, key_path)
 
         elif isinstance(value, list):
             key_path.append(index)
@@ -209,9 +231,9 @@ def _check_values_list(form_items, data, assert_raise, key_path):
                 for i, item in enumerate(data[index]):
                     ind_key_path = copy(key_path)
                     ind_key_path.append(i)
-                    _format_asserts(value[0], item, assert_raise, ind_key_path)
+                    _assert_format_matches(value[0], item, assert_raise, ind_key_path)
             else:
-                _format_asserts(value, data[index], assert_raise, key_path)
+                _assert_format_matches(value, data[index], assert_raise, key_path)
         else:
             item_key_path = copy(key_path)
             item_key_path.append(index)
@@ -240,7 +262,12 @@ def _assert_or_raise(function, arg, name, cond, key_path, value, expected, messa
         if message is None:
             schema_error = SchemaError(function, arg, name, key_path, value, expected)
         else:
-            message = message.format(function=function, arg=arg, name=name)
+            try:
+                message = message.format(function=function, arg=arg, name=name)
+            except KeyError:
+                pass
+            except IndexError:
+                pass
             complete_message = "\n    In {}, in schema for arg '{}':\n\t".format(function, name) + message
             schema_error = SchemaError(function, arg, name, key_path, value, expected, message=complete_message)
         raise schema_error from None

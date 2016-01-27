@@ -10,6 +10,7 @@ def typecheck(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
+        print("in typecheck wrapper")
         for i, arg in enumerate(args[:f.__code__.co_nlocals]):
             _compare_types(f, f.__code__.co_varnames[i], arg)
         for name, arg in kwargs.items():
@@ -26,7 +27,7 @@ def _compare_types(f, name, arg):
     expected = f.__annotations__.get(name, None)
     # If the annotation isn't a type (a class), just don't check it.
     # Done to allow inter-op with other decorators using annotations.
-    if type(expected) is not type:
+    if type(expected) not in [type, type(None)]:
         return
 
     if name == "return" and (expected is type(None) or expected is None) and arg:
