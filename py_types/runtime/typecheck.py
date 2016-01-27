@@ -10,7 +10,6 @@ def typecheck(f):
 
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
-        print("in typecheck wrapper")
         for i, arg in enumerate(args[:f.__code__.co_nlocals]):
             _compare_types(f, f.__code__.co_varnames[i], arg)
         for name, arg in kwargs.items():

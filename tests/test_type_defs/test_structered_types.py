@@ -66,7 +66,3 @@ class StructuredTypesTestCase(unittest.TestCase):
         self.assertTrue(isinstance(valid, StrIntValDict))
         self.assertFalse(isinstance(invalid, StrIntValDict))
         self.assertFalse(isinstance(also_invalid, StrIntValDict))
-
-
-if __name__ == "__main__":
-    unittest.main()

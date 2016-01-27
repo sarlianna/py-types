@@ -162,7 +162,3 @@ class ValidatedTypeTestCase(unittest.TestCase):
         self.assertTrue(isinstance([5], UnrelatedType))
         self.assertFalse(isinstance("h", UnrelatedType))
         self.assertFalse(isinstance(5, UnrelatedType))
-
-
-if __name__ == "__main__":
-    unittest.main()

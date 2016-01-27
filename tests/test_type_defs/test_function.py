@@ -31,11 +31,11 @@ class FunctionTypeTestCase(unittest.TestCase):
 
     def test_invalid_arity_throws_error(self):
         """Test that impossible arities throw errors (e.g. negative arity)"""
-        self.assertRaises(Exception, Function, -1, int)
+        self.assertRaises(ValueError, Function, -1, int)
 
     def test_invalid_return_type_throws_error(self):
         """Test that a return type not of type <class type> will throw an error."""
-        self.assertRaises(Exception, Function, 1, "hello")
+        self.assertRaises(TypeError, Function, 1, "hello")
 
     def test_no_return_annotation_passes(self):
         """Test that a function that has no return annotation will
@@ -47,7 +47,3 @@ class FunctionTypeTestCase(unittest.TestCase):
         func = Function(1, str)
         self.assertTrue(isinstance(other, func))
         self.assertTrue(isinstance(function, func))
-
-
-if __name__ == "__main__":
-    unittest.main()

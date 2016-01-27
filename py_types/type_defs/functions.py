@@ -2,7 +2,7 @@
 
 Instead of checking against collections.Callable, you can use these
 for functions with arity/return type checks."""
-from collections.abc import (
+from collections import (
     Callable,
 )
 
@@ -34,6 +34,12 @@ class Function(metaclass=TypeFamily):
         elif "return_type" in kwargs:
             return_type = kwargs["return_type"]
 
+        if arity not in range(0, 30):
+            raise ValueError("Invalid arity for a function.  Expected a value in [0, 30), but got value {}.".format(arity))
+        if type(return_type) != type:
+            raise TypeError("Need a type to check return value against, not a value:\n\t"
+                            + "Expected a value of type <class 'type'> but got type {}.".format(type(return_type)))
+
         self.arity = arity
         self.return_type = return_type
 
@@ -41,13 +47,14 @@ class Function(metaclass=TypeFamily):
         if not isinstance(instance, Callable):
             return False
 
+        if "return" in instance.__annotations__:
+            if not issubclass(instance.__annotations__["return"], self.return_type):
+                return False
+
         if not hasattr(instance, "__code__"):
             instance = instance.__call__
         f_code = instance.__code__
 
-        if f_code.co_names:
-            if not issubclass(f_code.co_names[0], self.return_type):
-                return False
         if f_code.co_argcount != self.arity:
             return False
 

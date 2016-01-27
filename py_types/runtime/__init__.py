@@ -7,4 +7,4 @@ from .schema import (
     SchemaOr,
     SchemaError
 )
-from .asserts import typecheck
+from .typecheck import typecheck

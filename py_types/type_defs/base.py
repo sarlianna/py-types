@@ -9,6 +9,15 @@ from collections.abc import (
 from copy import deepcopy
 
 
+def can_check_isinstance(specified_type):
+    """Checks that specified_type can be the second arg to isinstance without raising an exception."""
+    try:
+        isinstance(5, specified_type)
+    except TypeError:
+        return False
+    return True
+
+
 class TypeFamily(type):
     """
     Abstract base class for types/type families.
@@ -22,10 +31,13 @@ class TypeFamily(type):
         type_key = "type_members"
         types = []
         for base in bases:
-            types.extend(getattr(base, type_key, None))
+            types.extend(getattr(base, type_key, []))
         if type_key in attrs:
             types.extend(attrs[type_key])
 
+        for ty in types:
+            if not can_check_isinstance(ty):
+                raise TypeError("Expected a type <class 'type'> for all validated_types but got value {} of type {}.".format(ty, type(ty)))
         new_attrs = deepcopy(attrs)
         new_attrs["_registered_types"] = types
         return super().__new__(cls, name, bases, new_attrs)
@@ -49,12 +61,19 @@ class ValidatedType(type):
         types = []
         validators = []
         for base in bases:
-            types.extend(getattr(base, type_key, None))
-            validators.extend(getattr(base, validator_key, None))
+            types.extend(getattr(base, type_key, []))
+            validators.extend(getattr(base, validator_key, []))
         if type_key in attrs:
             types.extend(attrs[type_key])
         if validator_key in attrs:
             validators.extend(attrs[validator_key])
+
+        for ty in types:
+            if not can_check_isinstance(ty):
+                raise TypeError("Expected a type <class 'type'> for all validated_types but got value {} of type {}.".format(ty, type(ty)))
+        for va in validators:
+            if not isinstance(va, Callable):
+                raise TypeError("Expected a Callable for all validators, but instead got value {} of type {}.".format(va, type(va)))
 
         new_attrs = deepcopy(attrs)
         new_attrs["_registered_types"] = types

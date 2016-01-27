@@ -1,4 +1,4 @@
-from py_types.runtime.asserts import (
+from py_types.runtime import (
     typecheck,
 )
 from py_types.runtime.schema import (
@@ -254,7 +254,3 @@ class SchemaTestCase(unittest.TestCase):
         self.assertRaises(SchemaError, test_function_nd, {"test": {"different_test": 5}, "extra_key": 7})
         self.assertRaises(SchemaError, test_function_nd, [2, "a"])
         self.assertRaises(SchemaError, test_function_nd, None)
-
-
-if __name__ == "__main__":
-    unittest.main()
