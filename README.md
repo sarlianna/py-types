@@ -12,7 +12,16 @@ Currently there is no package on PyPI, which will change soon.
 After cloning the repo, you can install with `pip install .`,
 or you can build your own wheel via `python setup.py bdist_wheel`.  After running the `bdist_wheel`
 command a .whl file (`py_types-<version>-py3-none-any.whl`) will be available in dist/.  
-You can pip install the .whl file directly.
+You can pip install the .whl file directly via `pip install py_types-<version>-py3-none-any.whl`.
+
+
+Tests
+----------------
+Tests can be run via `nose2` from the root directory.
+
+If nose2 is installed, you can also run `python3 setup.py test` to run the tests, but note that nose2 does have some limitations
+when run this way (see https://nose2.readthedocs.org/en/latest/differences.html#limited-support-for-python-setup-py-test).
+
 
 How to use
 -----------
@@ -29,9 +38,9 @@ I'd like to add this to the library itself, but don't have a clean way to do tha
 Schema checking is meant to enforce structure and type in list and dictionary arguments.
 
 To use schema checking, declare a structure with the types you want to see reflected in the input you get,
-and then wrap the function you want to check with `@schema`, and the schema you want for a particular argumnet as the annotation.
+and then wrap the function you want to check with `@schema`, and the schema you want for a particular argument as the annotation.
 
-schema assert examples (with built-in types):
+schema examples (with built-in types):
 
 ```python
  test_schema = {
@@ -40,7 +49,7 @@ schema assert examples (with built-in types):
          "people": [str],
          "version": int
      },
-     "optional": (int, type(None))
+     "optional": SchemaOr(int, type(None))
  }
 
  @schema
@@ -74,7 +83,8 @@ If your schema's list value has one element, it's homogenous, and schema will as
 matches the schema of the one element that the list has.  If there are multiple elements, it is heterogenous.  Schema assumes that the length
 of heterogenous lists must match the number of elements specified, and that each item in the list will match the schemas in the list in order.
 (I.e., they are order-dependent.)  
-If some of this behaviour seems undesirable, custom or validated types can be used to combat some of it, but there is no other solid solution.
+If some of this behaviour seems undesirable, custom or validated types can be used to combat some of it, but there is currently no other solid solution.
+If you have a good solution for this, please tell me or submit a PR!
 
 ####typechecking
 
@@ -83,6 +93,7 @@ and type checking can be mixed and matched with schemas in the same function sig
 
 Because the arguments are passed straight through to isinstance, a tuple of types can be given, and it will return true
 if the argument is any one of the given types.
+Note that this is slightly different than schema, which interprets tuples as literal tuples, and uses SchemaOr for declaring one of any type.
 
 some typechecking examples:
 ```python
@@ -127,7 +138,7 @@ values.  Its `__instancecheck__` is customized to run the validators on the give
 Added a custom Function type in `type_defs.functions`.  This type allows you to specify and check for callables with
 specific arity (number of arguments) and return types. Added because checking against Callable was not a very good guarantee!
 
-Note that these types purposefully do not check for a schema return type or handle inoperability there.  The Function type will
+Note that these types purposefully do not handle schema declarations as a return type.  The Function type will
 only compare the direct return type of the function given.  
 If you'd like a particular function's return value to be schema checked at runtime, just define the function with the @schema
 decorator.
@@ -148,7 +159,7 @@ def retry_if_failed(code: (int, type(None))) -> type(None):
 
 Because everything is done through isinstance, the custom types should compose and work normally with other types, classes, etc.
 
-Please note that some cases of using this with the schema decorator may not work as intended -- if you want to accept multiple
+Please note again that this is different from how the schema decorator works -- if you want to accept multiple
 types or schemas with the schema decorator, please use the the `runtime.schema.SchemaOr` class with the types/schemas as args.
 
 
@@ -156,7 +167,6 @@ Future enhancements
 ----------------
 
 Next up on the to-do list for this project:
-- full test coverage! Currently missing schema tests and Function tests.
 - add an installation package to pypi.
 - support for python 3.5's `typing` package
 - Move some of this README to documentation instead.
