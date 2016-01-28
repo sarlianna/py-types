@@ -11,6 +11,15 @@ from .base import (
 )
 
 
+def can_check_isinstance(specified_type):
+    """Checks that specified_type can be the second arg to isinstance without raising an exception."""
+    try:
+        isinstance(5, specified_type)
+    except TypeError:
+        return False
+    return True
+
+
 class Function(metaclass=TypeFamily):
     """Enforces a type that's a function, has a specific number of arguments,
     and returns a specific type.
@@ -36,7 +45,7 @@ class Function(metaclass=TypeFamily):
 
         if arity not in range(0, 30):
             raise ValueError("Invalid arity for a function.  Expected a value in [0, 30), but got value {}.".format(arity))
-        if type(return_type) != type:
+        if not can_check_isinstance(return_type):
             raise TypeError("Need a type to check return value against, not a value:\n\t"
                             + "Expected a value of type <class 'type'> but got type {}.".format(type(return_type)))
 

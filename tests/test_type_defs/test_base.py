@@ -4,6 +4,10 @@ from py_types.type_defs.base import (
     TypeFamily,
     ValidatedType,
 )
+from py_types.type_defs.common import (
+    Any,
+)
+
 
 class TypeFamilyTestCase(unittest.TestCase):
     def set_up(self):
@@ -65,6 +69,11 @@ class TypeFamilyTestCase(unittest.TestCase):
         self.assertTrue(isinstance([5], UnrelatedType))
         self.assertFalse(isinstance("h", UnrelatedType))
         self.assertFalse(isinstance(5, UnrelatedType))
+
+    def test_type_member_children_are_valid_types(self):
+        """Test that types inheriting from TypeFamily are accepted as types by TypeFamily"""
+        class ValidType(metaclass=TypeFamily):
+            type_members = [Any]
 
 
 class ValidatedTypeTestCase(unittest.TestCase):

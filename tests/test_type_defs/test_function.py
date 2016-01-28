@@ -1,5 +1,6 @@
 import unittest
 from py_types.type_defs.functions import Function
+from py_types.type_defs.common import Any
 
 
 class FunctionTypeTestCase(unittest.TestCase):
@@ -47,3 +48,10 @@ class FunctionTypeTestCase(unittest.TestCase):
         func = Function(1, str)
         self.assertTrue(isinstance(other, func))
         self.assertTrue(isinstance(function, func))
+
+    def test_type_family_children_are_valid(self):
+        """Regression test where children of TypeFamily were rejected as not types."""
+        def valid_function() -> Function(1, Any):
+            return lambda x: x + 1
+
+        a = valid_function()
