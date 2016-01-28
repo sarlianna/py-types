@@ -8,6 +8,9 @@ Trying to follow [semantic versioning](http://semver.org) as much as possible.
 
 ### Changed
 
+- Fixed a bug with Function raising errors on children of TypeFamily as non-valid types, breaking all custom types used with Function.
+  (This fix is included in the v0.1.0a wheel.)
+
 ## [v0.1.0a] - 2016-01-27
 
 ### Added
