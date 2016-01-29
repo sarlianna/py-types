@@ -41,7 +41,7 @@ test_schema = {
         "people": [str],
         "version": int
     },
-    "optional": (int, NoneType)
+    "optional": SchemaOr(int, NoneType)
 }
 
 @schema
@@ -153,16 +153,16 @@ class SchemaTestCase(unittest.TestCase):
         test_function({"a": "hello there"})
 
     def test_schemaor(self):
-        """Test that a top-level schema or accepts either of its arguments"""
-        test_schema = SchemaOr({"count": (int, type(None))}, float)
+        """Test that a top-level schemaor accepts either of its arguments"""
+        test_schema = SchemaOr({"count": int}, float)
 
         @schema
         def test_function(count_struct: test_schema) -> test_schema:
             return {"count": 5}
 
         test_function({"count": 5})
-        test_function({})
         test_function(5.)
+        self.assertRaises(SchemaError, test_function, {})
         self.assertRaises(SchemaError, test_function, ["hello", 2])
 
     def test_schemaor_homogenous_lists(self):
@@ -254,3 +254,16 @@ class SchemaTestCase(unittest.TestCase):
         self.assertRaises(SchemaError, test_function_nd, {"test": {"different_test": 5}, "extra_key": 7})
         self.assertRaises(SchemaError, test_function_nd, [2, "a"])
         self.assertRaises(SchemaError, test_function_nd, None)
+
+    def test_nested_tuples(self):
+        """Test that tuples in schemas are treated as iterables/lists and not as sum types/values
+        (basically, test that they don't get passed to isinstance)
+        """
+        @schema
+        def test_function_nt(count_struct: {"test": (int, str)}):
+            pass
+
+        test_function_nt({"test": (5, "left")})
+        test_function_nt({"test": [3, "right"]})
+        self.assertRaises(SchemaError, test_function_nt, {"test": 5})
+        self.assertRaises(SchemaError, test_function_nt, {"test": "middle"})

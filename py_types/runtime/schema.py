@@ -130,7 +130,7 @@ def _check_values_dict(form_items, data, assert_raise, key_path):
     Checks the key exists in the data,
     Recurses on dicts and lists,
     and otherwise just checks the value to the form_item's value via isinstance.
-    
+
     Also checks to be sure that all keys in the data source exist in form_items."""
     for key, value in form_items:
 
@@ -152,7 +152,7 @@ def _check_values_dict(form_items, data, assert_raise, key_path):
             assert_raise(isinstance(data[key], dict), key_path, data[key], dict)
             _assert_format_matches(value, data[key], assert_raise, key_path)
 
-        elif isinstance(value, list):
+        elif isinstance(value, (list, tuple)):
             key_path.append(key)
             assert_raise(isinstance(data[key], (list, tuple)), key_path, data[key], (list, tuple))
             # If one item is in the list, assume its homogenous and any length is okay.

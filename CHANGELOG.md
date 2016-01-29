@@ -8,8 +8,13 @@ Trying to follow [semantic versioning](http://semver.org) as much as possible.
 
 ### Changed
 
+- Changed how schema handles tuples so that it's in line with the new SchemaOr changes.  Tuples are now treated as lists:
+  schema will expect to see a list or tuple in the data where the tuple is specified, with elements matching those in the tuple.
+  Homogenous/heterogenous list distinctions also exist for tuples.  Note that this means that use of tuples as sumtypes in schemas
+  is now deprecated. [DEPRECATED]
+  (The v0.1.0a wheel was re-uploaded to contain this fix.)
 - Fixed a bug with Function raising errors on children of TypeFamily as non-valid types, breaking all custom types used with Function.
-  (This fix is included in the v0.1.0a wheel.)
+  (The v0.1.0a wheel was re-uploaded to contain this fix.)
 
 ## [v0.1.0a] - 2016-01-27
 
