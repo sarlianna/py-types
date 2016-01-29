@@ -1,7 +1,7 @@
 PY-TYPES (PYPES?!)
 -------------
 
-Gradual typing for Python 3. Python 2 won't be supported due to lack of annotations in functions.
+Lightweight, gradual typing for Python 3. Python 2 won't be supported due to lack of annotations in functions.
 
 
 Installation
@@ -161,6 +161,14 @@ Because everything is done through isinstance, the custom types should compose a
 
 Please note again that this is different from how the schema decorator works -- if you want to accept multiple
 types or schemas with the schema decorator, please use the the `runtime.schema.SchemaOr` class with the types/schemas as args.
+
+
+Known Bugs
+----------------
+
+- When reporting errors at a specific location in a schema, the given path is always incorrect. E.g. in the message
+  `value for schema at arg_name["key_name"][0]["key"]`, arg_name["key_name"][0]["key"] is not the actual value it's looking at and
+  may not even be a valid value. The larger the schema, the more likely it is to be inaccurate.
 
 
 Future enhancements

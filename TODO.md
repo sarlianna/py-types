@@ -1,3 +1,6 @@
+Known bugs:
+- key path on schema reporting is always wrong
+
 Actual friend looking for:
 - Sum types (kind of already there)
 - matching/case clauses on sum types
