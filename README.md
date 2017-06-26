@@ -33,7 +33,7 @@ It's recommended that you use this library for development/testing only, by defi
 I'd like to add this to the library itself, but don't have a clean way to do that at the moment.
 
 
-####schemas
+#### schemas
 
 Schema checking is meant to enforce structure and type in list and dictionary arguments.
 
@@ -86,7 +86,7 @@ of heterogenous lists must match the number of elements specified, and that each
 If some of this behaviour seems undesirable, custom or validated types can be used to combat some of it, but there is currently no other solid solution.
 If you have a good solution for this, please tell me or submit a PR!
 
-####typechecking
+#### typechecking
 
 Type checking is meant to flat-out test values via isinstance.  Schemas use the same thing internally,
 and type checking can be mixed and matched with schemas in the same function signature. (No tests for this yet!  But will be added soon.)
